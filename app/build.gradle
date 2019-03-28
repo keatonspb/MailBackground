@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "com.creativityapps.gmailbackground"
@@ -23,7 +22,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
-    implementation project(':gmailbackgroundlibrary')
+    implementation project(':mailbackgroundlibrary')
 
     // for sending attachment
     implementation("com.github.hotchemi:permissionsdispatcher:3.1.0") {

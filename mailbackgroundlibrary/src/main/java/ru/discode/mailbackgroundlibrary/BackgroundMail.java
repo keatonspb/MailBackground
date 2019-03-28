@@ -1,4 +1,4 @@
-package com.creativityapps.gmailbackgroundlibrary;
+package ru.discode.mailbackgroundlibrary;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
@@ -10,8 +10,8 @@ import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.creativityapps.gmailbackgroundlibrary.util.GmailSender;
-import com.creativityapps.gmailbackgroundlibrary.util.Utils;
+import ru.discode.mailbackgroundlibrary.util.MailSender;
+import ru.discode.mailbackgroundlibrary.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +30,7 @@ public class BackgroundMail {
     private String subject;
     private String body;
     private String type;
+    private MailSender.MailBox mailBox;
     private boolean useDefaultSession;
     private String sendingMessage;
     private ArrayList<String> attachments = new ArrayList<>();
@@ -66,6 +67,7 @@ public class BackgroundMail {
         body = builder.body;
         type = builder.type;
         useDefaultSession = builder.useDefaultSession;
+        mailBox = builder.mailBox;
         setSendingMessage(builder.sendingMessage);
         setOnSendingCallback(builder.onSendingCallback);
     }
@@ -229,11 +231,14 @@ public class BackgroundMail {
     }
 
     public void send() {
+        if(mailBox == null) {
+            throw new IllegalArgumentException("You didn't set a Mailbox");
+        }
         if (TextUtils.isEmpty(username)) {
-            throw new IllegalArgumentException("You didn't set a Gmail username");
+            throw new IllegalArgumentException("You didn't set a mail username");
         }
         if (TextUtils.isEmpty(password)) {
-            throw new IllegalArgumentException("You didn't set a Gmail password");
+            throw new IllegalArgumentException("You didn't set a mail password");
         }
         if (TextUtils.isEmpty(mailTo) && TextUtils.isEmpty(mailCc) && TextUtils.isEmpty(mailBcc)) {
             throw new IllegalArgumentException("You didn't set any recipient addresses");
@@ -262,7 +267,7 @@ public class BackgroundMail {
         @Override
         protected Exception doInBackground(String... arg0) {
             try {
-                GmailSender sender = new GmailSender(username, password, useDefaultSession);
+                MailSender sender = new MailSender(username, password, useDefaultSession, mailBox);
                 if (!attachments.isEmpty()) {
                     for (int i = 0; i < attachments.size(); i++) {
                         if (!attachments.get(i).isEmpty()) {
@@ -306,6 +311,7 @@ public class BackgroundMail {
         private String subject = "";
         private String body = "";
         private String type = BackgroundMail.TYPE_PLAIN;
+        private MailSender.MailBox mailBox;
         private boolean useDefaultSession = true;
         private ArrayList<String> attachments = new ArrayList<>();
         private String sendingMessage;
@@ -313,6 +319,10 @@ public class BackgroundMail {
 
         private Builder(Context context) {
             this.context = context;
+        }
+        public Builder withMailBox(@NonNull String smtp, Integer port) {
+            this.mailBox = MailSender.buildMailBox(smtp, port);
+            return this;
         }
 
         public Builder withUsername(@NonNull String username) {

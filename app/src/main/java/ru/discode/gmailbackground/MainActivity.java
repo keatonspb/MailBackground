@@ -1,4 +1,4 @@
-package com.creativityapps.gmailbackground;
+package ru.discode.gmailbackground;
 
 import android.Manifest;
 import android.os.Bundle;
@@ -9,10 +9,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
 
-import com.creativityapps.gmailbackgroundlibrary.BackgroundMail;
+import com.creativityapps.gmailbackground.R;
+
+import ru.discode.mailbackgroundlibrary.BackgroundMail;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
+import ru.discode.mailbackgroundlibrary.util.MailSender;
 
 @RuntimePermissions
 public class MainActivity extends AppCompatActivity {
@@ -70,12 +73,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendEmail(String type, String fileName) {
         BackgroundMail.Builder builder = BackgroundMail.newBuilder(this)
-                .withUsername("username@gmail.com")
-                .withPassword("password12345")
+                .withMailBox("smtp.random.com", 25)
+                .withUsername("test@mail.com")
+                .withPassword("password")
                 .withSenderName("Your sender name")
-                .withMailTo("to-email@gmail.com")
-                .withMailCc("cc-email@gmail.com")
-                .withMailBcc("bcc-email@gmail.com")
+                .withMailTo("to@gmail.com")
+//                .withMailCc("cc-email@gmail.com")
+//                .withMailBcc("bcc-email@gmail.com")
                 .withSubject("This is the subject")
                 .withType(type)
                 .withUseDefaultSession(false)

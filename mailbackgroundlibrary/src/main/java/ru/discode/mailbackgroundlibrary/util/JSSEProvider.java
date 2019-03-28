@@ -1,4 +1,4 @@
-package com.creativityapps.gmailbackgroundlibrary.util;
+package ru.discode.mailbackgroundlibrary.util;
 
 import java.security.AccessController;
 import java.security.Provider;

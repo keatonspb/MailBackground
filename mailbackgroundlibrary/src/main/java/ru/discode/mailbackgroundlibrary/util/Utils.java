@@ -1,4 +1,4 @@
-package com.creativityapps.gmailbackgroundlibrary.util;
+package ru.discode.mailbackgroundlibrary.util;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

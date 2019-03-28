@@ -1,8 +1,8 @@
-package com.creativityapps.gmailbackgroundlibrary.util;
+package ru.discode.mailbackgroundlibrary.util;
 
 import android.text.TextUtils;
 
-import com.creativityapps.gmailbackgroundlibrary.BackgroundMail;
+import ru.discode.mailbackgroundlibrary.BackgroundMail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,30 +25,41 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-public class GmailSender extends javax.mail.Authenticator {
-    private final String GMAIL_HOST = "smtp.gmail.com";
+public class MailSender extends javax.mail.Authenticator {
 
     private String user;
     private String password;
     private Session session;
     private Multipart multipart;
 
+    public static class MailBox {
+        public String smtp;
+        public Integer port;
+    }
+
+    public static MailBox buildMailBox(String smtp, Integer port) {
+        MailBox mailBox = new MailBox();
+        mailBox.smtp = smtp;
+        mailBox.port = port;
+        return mailBox;
+    }
+
     static {
         Security.addProvider(new JSSEProvider());
     }
 
-    public GmailSender(String user, String password, boolean useDefaultSession) {
+    public MailSender(String user, String password, boolean useDefaultSession, MailBox mailBox) {
         this.user = user;
         this.password = password;
 
         Properties props = new Properties();
         props.setProperty("mail.transport.protocol", "smtp");
-        props.setProperty("mail.host", GMAIL_HOST);
+        props.setProperty("mail.host", mailBox.smtp);
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.port", "465");
-        props.put("mail.smtp.socketFactory.port", "465");
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.socketFactory.fallback", "false");
+        props.put("mail.smtp.port", mailBox.port.toString());
+//        props.put("mail.smtp.socketFactory.port", "25");
+//        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//        props.put("mail.smtp.socketFactory.fallback", "false");
         props.setProperty("mail.smtp.quitwait", "false");
 
         session = useDefaultSession ? Session.getDefaultInstance(props, this) : Session.getInstance(props, this);
