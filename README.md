@@ -10,7 +10,8 @@ I used to use the original lib https://github.com/luongvo/GmailBackground and ma
 ## Usage
 ```java
 BackgroundMail.newBuilder(this)
-        .withMailBox("smtp.random.com", 25)
+        .withMailBox("smtp.random.com", 25, false)
+        .withFrom("username@gmail.com")
         .withUsername("username@gmail.com")
         .withPassword("password12345")
         .withSenderName("Your sender name")
