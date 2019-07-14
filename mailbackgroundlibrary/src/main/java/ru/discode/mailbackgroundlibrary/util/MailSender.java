@@ -2,8 +2,6 @@ package ru.discode.mailbackgroundlibrary.util;
 
 import android.text.TextUtils;
 
-import ru.discode.mailbackgroundlibrary.BackgroundMail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +23,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import ru.discode.mailbackgroundlibrary.BackgroundMail;
+
 public class MailSender extends javax.mail.Authenticator {
 
     private String user;
@@ -32,23 +32,7 @@ public class MailSender extends javax.mail.Authenticator {
     private Session session;
     private Multipart multipart;
 
-    public static class MailBox {
-        public String smtp;
-        public Integer port;
-    }
-
-    public static MailBox buildMailBox(String smtp, Integer port) {
-        MailBox mailBox = new MailBox();
-        mailBox.smtp = smtp;
-        mailBox.port = port;
-        return mailBox;
-    }
-
-    static {
-        Security.addProvider(new JSSEProvider());
-    }
-
-    public MailSender(String user, String password, boolean useDefaultSession, MailBox mailBox) {
+    public MailSender(String user, String password, boolean useDefaultSession, MailBox mailBox, String from) {
         this.user = user;
         this.password = password;
 
@@ -56,14 +40,47 @@ public class MailSender extends javax.mail.Authenticator {
         props.setProperty("mail.transport.protocol", "smtp");
         props.setProperty("mail.host", mailBox.smtp);
         props.put("mail.smtp.auth", "true");
+
+        if (from != null) {
+            props.put("mail.smtp.from", from);
+        }
+
         props.put("mail.smtp.port", mailBox.port.toString());
 //        props.put("mail.smtp.socketFactory.port", "25");
-//        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        if (mailBox.ssl) {
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        }
 //        props.put("mail.smtp.socketFactory.fallback", "false");
         props.setProperty("mail.smtp.quitwait", "false");
 
         session = useDefaultSession ? Session.getDefaultInstance(props, this) : Session.getInstance(props, this);
         multipart = new MimeMultipart();
+    }
+
+    public MailSender(String user, String password, boolean useDefaultSession, MailBox mailBox) {
+        this(user, password, useDefaultSession, mailBox, null);
+    }
+
+    public static MailBox buildMailBox(String smtp, Integer port) {
+        return MailSender.buildMailBox(smtp, port, false);
+    }
+
+    static {
+        Security.addProvider(new JSSEProvider());
+    }
+
+    public static MailBox buildMailBox(String smtp, Integer port, Boolean ssl) {
+        MailBox mailBox = new MailBox();
+        mailBox.smtp = smtp;
+        mailBox.port = port;
+        mailBox.ssl = ssl;
+        return mailBox;
+    }
+
+    public static class MailBox {
+        public String smtp;
+        public Integer port;
+        public Boolean ssl;
     }
 
     protected PasswordAuthentication getPasswordAuthentication() {

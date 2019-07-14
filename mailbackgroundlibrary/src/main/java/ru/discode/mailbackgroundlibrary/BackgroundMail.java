@@ -10,12 +10,12 @@ import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Log;
 
-import ru.discode.mailbackgroundlibrary.util.MailSender;
-import ru.discode.mailbackgroundlibrary.util.Utils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import ru.discode.mailbackgroundlibrary.util.MailSender;
+import ru.discode.mailbackgroundlibrary.util.Utils;
 
 
 public class BackgroundMail {
@@ -23,6 +23,7 @@ public class BackgroundMail {
 
     private String username;
     private String password;
+    private String from;
     private String senderName;
     private String mailTo;
     private String mailCc;
@@ -59,6 +60,7 @@ public class BackgroundMail {
         attachments = builder.attachments;
         username = builder.username;
         password = builder.password;
+        from = builder.from;
         senderName = builder.senderName;
         mailTo = builder.mailTo;
         mailCc = builder.mailCc;
@@ -250,59 +252,10 @@ public class BackgroundMail {
         new SendEmailTask().execute();
     }
 
-    public class SendEmailTask extends AsyncTask<String, Void, Exception> {
-        private ProgressDialog progressDialog;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (!TextUtils.isEmpty(sendingMessage)) {
-                progressDialog = new ProgressDialog(mContext);
-                progressDialog.setMessage(sendingMessage);
-                progressDialog.setCancelable(false);
-                progressDialog.show();
-            }
-        }
-
-        @Override
-        protected Exception doInBackground(String... arg0) {
-            try {
-                MailSender sender = new MailSender(username, password, useDefaultSession, mailBox);
-                if (!attachments.isEmpty()) {
-                    for (int i = 0; i < attachments.size(); i++) {
-                        if (!attachments.get(i).isEmpty()) {
-                            sender.addAttachment(attachments.get(i));
-                        }
-                    }
-                }
-                sender.sendMail(subject, body, username, senderName, mailTo, mailCc, mailBcc, type);
-            } catch (Exception e) {
-                return e;
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Exception result) {
-            super.onPostExecute(result);
-            if (progressDialog != null && progressDialog.isShowing()) {
-                progressDialog.dismiss();
-            }
-
-            if (onSendingCallback != null) {
-                if (result == null) {
-                    onSendingCallback.onSuccess();
-                } else {
-                    result.printStackTrace();
-                    onSendingCallback.onFail(result);
-                }
-            }
-        }
-    }
-
     public static final class Builder {
         private Context context;
         private String username;
+        private String from;
         private String password;
         private String senderName;
         private String mailTo;
@@ -325,6 +278,11 @@ public class BackgroundMail {
             return this;
         }
 
+        public Builder withMailBox(@NonNull String smtp, Integer port, Boolean ssl) {
+            this.mailBox = MailSender.buildMailBox(smtp, port, ssl);
+            return this;
+        }
+
         public Builder withUsername(@NonNull String username) {
             this.username = username;
             return this;
@@ -332,6 +290,16 @@ public class BackgroundMail {
 
         public Builder withUsername(@StringRes int usernameRes) {
             this.username = context.getResources().getString(usernameRes);
+            return this;
+        }
+
+        public Builder withFrom(@NonNull String from) {
+            this.from = from;
+            return this;
+        }
+
+        public Builder withFrom(@StringRes int fromRes) {
+            this.from = context.getResources().getString(fromRes);
             return this;
         }
 
@@ -454,6 +422,56 @@ public class BackgroundMail {
             BackgroundMail backgroundMail = build();
             backgroundMail.send();
             return backgroundMail;
+        }
+    }
+
+    public class SendEmailTask extends AsyncTask<String, Void, Exception> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (!TextUtils.isEmpty(sendingMessage)) {
+                progressDialog = new ProgressDialog(mContext);
+                progressDialog.setMessage(sendingMessage);
+                progressDialog.setCancelable(false);
+                progressDialog.show();
+            }
+        }
+
+        @Override
+        protected Exception doInBackground(String... arg0) {
+            try {
+                MailSender sender = new MailSender(username, password, useDefaultSession, mailBox, from);
+                if (!attachments.isEmpty()) {
+                    for (int i = 0; i < attachments.size(); i++) {
+                        if (!attachments.get(i).isEmpty()) {
+                            sender.addAttachment(attachments.get(i));
+                        }
+                    }
+                }
+                sender.sendMail(subject, body, username, senderName, mailTo, mailCc, mailBcc, type);
+            } catch (Exception e) {
+                return e;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Exception result) {
+            super.onPostExecute(result);
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+
+            if (onSendingCallback != null) {
+                if (result == null) {
+                    onSendingCallback.onSuccess();
+                } else {
+                    result.printStackTrace();
+                    onSendingCallback.onFail(result);
+                }
+            }
         }
     }
 }
