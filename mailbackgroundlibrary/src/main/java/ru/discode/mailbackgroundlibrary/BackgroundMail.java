@@ -450,7 +450,7 @@ public class BackgroundMail {
                         }
                     }
                 }
-                sender.sendMail(subject, body, username, senderName, mailTo, mailCc, mailBcc, type);
+                sender.sendMail(subject, body, from, senderName, mailTo, mailCc, mailBcc, type);
             } catch (Exception e) {
                 return e;
             }
